@@ -1,15 +1,19 @@
 package Hello;
 
-//import java.io.FileInputStream;
+
 import java.util.ArrayList;
-//import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.IOException;
 
-
+@SuppressWarnings("unused")
 public class Main {
 	public static List<SanPham> sp = new ArrayList<>();
-
+	
 	public static void themSanPham(List<SanPham> sp) {
 		Scanner sc = new Scanner(System.in);
 		System.out.print("(?) Nhập số sản phẩm muốn thêm: ");
@@ -168,40 +172,35 @@ public class Main {
 			hienThiSP(sp);
 		}
 	}
+	
+	public static void nhapDuLieuTuFile(List<SanPham> sp, String tenFile) {
+        try {
+            FileReader fileReader = new FileReader(tenFile);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String line;
 
-	public static void nhapTuFileExcel(List<SanPham> sp) {
-		Scanner sc = new Scanner(System.in);
-		System.out.print("(?) Nhập đường dẫn tới file Excel: ");
-		String excelFilePath = sc.nextLine();
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] parts = line.split(","); // Giả sử dữ liệu trong file được phân tách bằng dấu ","
+                if (parts.length == 4) { // Kiểm tra xem dữ liệu có đúng định dạng không
+                    String maSP = parts[0].trim();
+                    String tenSP = parts[1].trim();
+                    int soLuong = Integer.parseInt(parts[2].trim());
+                    double gia = Double.parseDouble(parts[3].trim());
 
-		try {
-			FileInputStream fis = new FileInputStream(new File(excelFilePath));
-			XSSFWorkbook workbook = new XSSFWorkbook(fis);
-			XSSFSheet sheet = workbook.getSheetAt(0);
+                    SanPham sanPham = new SanPham(maSP, tenSP, soLuong, gia);
+                    sp.add(sanPham);
+                } else {
+                    System.out.println("Dữ liệu trong file không đúng định dạng.");
+                }
+            }
 
-			for (Row row : sheet) {
-				if (row.getRowNum() == 0) {
-					// Skip header row
-					continue;
-				}
-				String maSP = row.getCell(0).getStringCellValue();
-				String name = row.getCell(1).getStringCellValue();
-				int soLuong = (int) row.getCell(2).getNumericCellValue();
-				double gia = row.getCell(3).getNumericCellValue();
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-				SanPham product = new SanPham(maSP, name, soLuong, gia);
-				sp.add(product);
-			}
-
-			workbook.close();
-			fis.close();
-			System.out.println("Danh sách sản phẩm đã được nhập từ file Excel thành công.");
-			System.out.println("");
-		} catch (IOException e) {
-			System.out.println("Đường dẫn hoặc định dạng file không hợp lệ. Vui lòng kiểm tra lại.");
-			System.out.println("");
-		}
-	}
+	
 
 	public static void main(String[] args) {
 
@@ -242,11 +241,14 @@ public class Main {
 			case 6:
 				sapXepSP(sp);
 				break;
+			case 7:
+				nhapDuLieuTuFile(sp, "file.txt");
+				break;
 			case 0:
 				thoatVongLap = false;
 				break;
 			default:
-				System.out.println("Lựa chọn không hợp lệ. Vui lòng nhập số từ 0 đến 6!");
+				System.out.println("(!) Lựa chọn không hợp lệ. Vui lòng nhập số từ 0 đến 6!");
 				System.out.println("");
 			}
 		}
